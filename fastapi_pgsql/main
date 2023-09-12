@@ -1,0 +1,90 @@
+from fastapi import FastAPI, status, HTTPException
+from pydantic import BaseModel
+from database import SessionLocal
+import models
+
+app = FastAPI()
+db = SessionLocal()
+
+
+class OurBaseModel(BaseModel):
+    class Config:
+        orm_mode = True
+
+
+class Student(OurBaseModel):
+    roll_no: int
+    name: str
+    stream: str
+
+
+@app.get("/", response_model=list[Student])
+async def getall_stu():
+    getallstu = db.query(models.Student).all()
+    return getallstu
+
+
+@app.post("/add", response_model=Student, status_code=200)
+async def add_stu(student: Student):
+    newStudent = models.Student(
+        roll_no=student.roll_no,
+        name=student.name,
+        stream=student.stream
+    )
+
+    find_student = db.query(models.Student).filter(
+        models.Student.roll_no == student.roll_no).first()
+
+    if (find_student) is not None:
+        raise HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE, detail="Already exists")
+
+    db.add(newStudent)
+    db.commit()
+
+    return newStudent
+
+@app.put("/update/{student_id}", response_model=Student, status_code=status.HTTP_202_ACCEPTED)
+async def updateStu(student_id:int, student:Student):
+    find_student = db.query(models.Student).filter(models.Student.roll_no == student_id).first()
+
+    if(find_student is not None):
+        find_student.roll_no=student.roll_no
+        find_student.name=student.name
+        find_student.stream=student.stream    
+
+        db.commit()
+        return find_student
+    raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail= "Does not exist")
+
+
+@app.delete("/delete/{student_id}",response_model=Student, status_code=status.HTTP_202_ACCEPTED)
+async def deleteStu(student_id:int):
+    find_student = db.query(models.Student).filter(models.Student.roll_no == student_id).first()
+    if(find_student is not None):
+        db.delete(find_student)
+        db.commit()    
+        return find_student
+
+    raise HTTPException(status_code=status.HTTP_406_NOT_ACCEPTABLE, detail= "Does not exist")
+
+    
+
+
+# @app.get("/")
+# async def getStudent_info():
+#     return {"messgae": "Server is running"}
+
+
+# @app.get("/byid{roll_no}")
+# async def getStudent_info_id(roll_no: int):
+#     return {"messgae": f"Student ID is {roll_no}"}
+
+
+# @app.post("/add")
+# async def add_info(stu: Student):
+#     return {
+#         "roll_no": stu.roll_no,
+#         "name": stu.name,
+#         "stream": stu.stream
+#     }
