@@ -47,8 +47,7 @@ def custom_dns_query(domain, record_type):
         
         # Parse the response based on record type
         if record_type == 1:  # A record
-            ipv4_address = socket.inet_ntoa(response[-4:])
-            return {"domain": domain, "a_records": [ipv4_address]}
+            return {"domain": domain, "a_records": socket.getaddrinfo(domain, 80)}
         elif record_type == 15:  # MX record
             mx_records = []
             idx = 12  # Start parsing the response after the header
