@@ -7,7 +7,6 @@ app = FastAPI()
 
 def get_domain_age(domain):
     try:
-        # Perform a DNS TXT record query for DMARC
         domain_info = whois.whois(domain)
         creation_date = domain_info.creation_date
         if isinstance(creation_date, list):
@@ -21,11 +20,9 @@ def get_domain_age(domain):
 
 def get_dmarc_record(domain):
     try:
-        # Perform a DNS TXT record query for DMARC
         dmarc_domain = f'_dmarc.{domain}'
         txt_records = dns.resolver.query(dmarc_domain, 'TXT')
         
-        # Extract and format the DMARC records
         dmarc_records = []
         for txt_record in txt_records:
             for txt_string in txt_record.strings:
@@ -38,28 +35,6 @@ def get_dmarc_record(domain):
 
     except Exception as e:
         return f"An error occurred: {str(e)}"
-
-# def get_spf_records(domain):
-#     try:
-#         # Perform a DNS SPF record query for the specified domain
-#         spf_domain = domain
-#         spf_records = dns.resolver.query(spf_domain, rdtype=dns.rdatatype.SPF)
-        
-#         # Extract and format the SPF records
-#         spf_records_info = []
-#         for spf_record in spf_records:
-#             for spf_string in spf_record.strings:
-#                 spf_records_info.append(spf_string)
-        
-#         if spf_records_info:
-#             return spf_records_info
-#         else:
-#             return "No SPF record found for the domain."
-
-#     except Exception as e:
-#         return f"An error occurred: {str(e)}"
-
-
 
 @app.get("/name-servers/")
 async def get_name_servers(domain: str):
