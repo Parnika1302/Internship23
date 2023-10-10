@@ -39,10 +39,8 @@ def get_dmarc_record(domain):
 @app.get("/name-servers/")
 async def get_name_servers(domain: str):
     try:
-        # Perform an NS record query for the specified domain
         ns_records = dns.resolver.query(domain, 'NS')
 
-        # Extract and format the NS record data
         ns_records_info = [ns.target.to_text() for ns in ns_records]
 
         return {"domain": domain, "name_servers": ns_records_info}
@@ -53,7 +51,6 @@ async def get_name_servers(domain: str):
 @app.get("/mx-records/")
 async def get_mx_records(domain: str):
     try:
-        # Perform an MX record query for the specified domain
         mx_records = dns.resolver.query(domain, 'MX')
         
 
@@ -64,8 +61,6 @@ async def get_mx_records(domain: str):
             }
             for mx in mx_records
         ]     
-
-
         return {"domain": domain, "mx_records": mx_records_info}
     
     except Exception as e:
